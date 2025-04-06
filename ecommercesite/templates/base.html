@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}My sussh ecommerce site{% endblock %}</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  {% load static %}
+  <link href="{% static 'dist/styles.css' %}" rel="stylesheet"/>
+  <meta name="description" content="" />
+  <link rel="icon" href="favicon.png">
+</head>
+<body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
+<header class="shadow-md">
+  {% include "includes/nav.html" %}
+</header>
+
+<main class="container mx-auto py-8 flex-grow">
+{% block content %}{% endblock %}
+</main>
+
+<footer>
+  <div class="container mx-auto py-4 text-center">
+  <p>@2025 E-com Spryzen inc. All rights reserved</p>
+  </div>
+</footer>
+
+</body>
+</html>
