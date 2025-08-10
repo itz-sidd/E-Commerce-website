@@ -17,6 +17,16 @@ import ProfilePage from './pages/ProfilePage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
 import NotFoundPage from './pages/NotFoundPage';
 
+function App() {
+  return (
+    <AuthProvider>
+      <CartProvider>
+        <AppContent />
+      </CartProvider>
+    </AuthProvider>
+  );
+}
+
 const AppContent = () => {
   const { toast, hideToast } = useCart();
 
@@ -47,15 +57,5 @@ const AppContent = () => {
     </div>
   );
 };
-
-function App() {
-  return (
-    <AuthProvider>
-      <CartProvider>
-        <AppContent />
-      </CartProvider>
-    </AuthProvider>
-  );
-}
 
 export default App;
