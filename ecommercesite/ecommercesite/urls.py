@@ -21,6 +21,13 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # API endpoints for React frontend
+    path("api/cart/", include('cart.urls')),
+    path("api/orders/", include("orders.urls")),
+    path('api/', include('products.urls', namespace='products')),
+    
+    # Traditional Django URLs
     path("cart/", include('cart.urls')),
     path("orders/", include("orders.urls")),
     path('', include('products.urls', namespace='products')),
