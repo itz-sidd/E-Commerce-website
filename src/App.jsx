@@ -49,9 +49,9 @@ const AppContent = () => {
       </main>
       <Footer />
       <Toast
-        type={toast.type}
-        message={toast.message}
-        isVisible={toast.isVisible}
+        type={toast?.type || 'success'}
+        message={toast?.message || ''}
+        isVisible={toast?.isVisible || false}
         onClose={hideToast}
       />
     </div>
