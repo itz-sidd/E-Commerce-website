@@ -53,8 +53,25 @@ export const CartProvider = ({ children }) => {
     items: [],
   });
 
+  const [toast, setToast] = useState({ isVisible: false, message: '', type: 'success' });
+
+  const showToast = (message, type = 'success') => {
+    setToast({ isVisible: true, message, type });
+  };
+
+  const hideToast = () => {
+    setToast({ ...toast, isVisible: false });
+  };
+
   const addToCart = (product) => {
+    const existingItem = state.items.find(item => item.id === product.id);
     dispatch({ type: 'ADD_TO_CART', payload: product });
+    showToast(
+      existingItem
+        ? `Increased ${product.name} quantity in cart`
+        : `Added ${product.name} to cart`,
+      'success'
+    );
   };
 
   const removeFromCart = (productId) => {
