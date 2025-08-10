@@ -26,8 +26,6 @@ function App() {
 }
 
 const AppContent = () => {
-  const { toast, hideToast } = useCart();
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -46,12 +44,6 @@ const AppContent = () => {
         </Routes>
       </main>
       <Footer />
-      <Toast
-        type={toast?.type || 'success'}
-        message={toast?.message || ''}
-        isVisible={toast?.isVisible || false}
-        onClose={hideToast}
-      />
     </div>
   );
 };
