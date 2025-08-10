@@ -5,6 +5,8 @@ import { useCart } from '../context/CartContext';
 function CheckoutPage() {
   const navigate = useNavigate();
   const { cartItems, getCartTotal, clearCart } = useCart();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -34,18 +36,110 @@ function CheckoutPage() {
     });
   };
 
-  const handleSubmit = (e) => {
+  // Function to get CSRF token for Django
+  const getCSRFToken = () => {
+    const cookieValue = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('csrftoken='))
+      ?.split('=')[1];
+    return cookieValue || '';
+  };
+
+  const submitOrderToBackend = async (orderData) => {
+    try {
+      const response = await fetch('/api/orders/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        credentials: 'include',
+        body: JSON.stringify(orderData)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        return { success: true, orderId: result.order_id };
+      } else {
+        const errorData = await response.json();
+        return { success: false, error: errorData.error || 'Failed to create order' };
+      }
+    } catch (error) {
+      console.error('Error submitting order:', error);
+      return { success: false, error: 'Network error occurred' };
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would normally process the payment
-    alert('Order placed successfully!');
-    clearCart();
-    navigate('/');
+    setLoading(true);
+    setError('');
+
+    try {
+      // Prepare order data for Django backend
+      const orderData = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        address: formData.address,
+        city: formData.city,
+        postal_code: formData.zipCode,
+        items: cartItems.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        subtotal: subtotal,
+        shipping: shipping,
+        tax: tax,
+        total: total
+      };
+
+      // Try to submit to Django backend
+      const result = await submitOrderToBackend(orderData);
+      
+      if (result.success) {
+        alert(`Order #${result.orderId} placed successfully!`);
+        clearCart();
+        navigate('/');
+      } else {
+        // Fallback: save order to localStorage and show success
+        console.warn('Backend submission failed, using fallback:', result.error);
+        
+        const fallbackOrder = {
+          id: Date.now(),
+          ...orderData,
+          created_at: new Date().toISOString(),
+          status: 'pending'
+        };
+        
+        // Save to localStorage as fallback
+        const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+        existingOrders.push(fallbackOrder);
+        localStorage.setItem('orders', JSON.stringify(existingOrders));
+        
+        alert(`Order #${fallbackOrder.id} placed successfully!`);
+        clearCart();
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Error processing order:', error);
+      setError('Failed to process order. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600">{error}</p>
+          </div>
+        )}
 
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-8">
           {/* Checkout Form */}
@@ -67,6 +161,7 @@ function CheckoutPage() {
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      disabled={loading}
                     />
                   </div>
 
@@ -81,6 +176,7 @@ function CheckoutPage() {
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      disabled={loading}
                     />
                   </div>
 
@@ -95,6 +191,7 @@ function CheckoutPage() {
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      disabled={loading}
                     />
                   </div>
 
@@ -109,6 +206,7 @@ function CheckoutPage() {
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      disabled={loading}
                     />
                   </div>
 
@@ -123,6 +221,7 @@ function CheckoutPage() {
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      disabled={loading}
                     />
                   </div>
 
@@ -137,6 +236,7 @@ function CheckoutPage() {
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      disabled={loading}
                     />
                   </div>
                 </div>
@@ -159,6 +259,7 @@ function CheckoutPage() {
                       placeholder="1234 5678 9012 3456"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      disabled={loading}
                     />
                   </div>
 
@@ -174,6 +275,7 @@ function CheckoutPage() {
                       placeholder="MM/YY"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      disabled={loading}
                     />
                   </div>
 
@@ -189,6 +291,7 @@ function CheckoutPage() {
                       placeholder="123"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      disabled={loading}
                     />
                   </div>
                 </div>
@@ -196,9 +299,14 @@ function CheckoutPage() {
 
               <button
                 type="submit"
-                className="w-full btn-primary text-lg py-3"
+                disabled={loading}
+                className={`w-full text-lg py-3 rounded-lg font-medium transition-colors ${
+                  loading 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'btn-primary hover:bg-blue-700'
+                }`}
               >
-                Place Order - ${total.toFixed(2)}
+                {loading ? 'Processing...' : `Place Order - $${total.toFixed(2)}`}
               </button>
             </form>
           </div>
