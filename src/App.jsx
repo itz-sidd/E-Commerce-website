@@ -15,6 +15,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 const AppContent = () => {
   const { toast, hideToast } = useCart();
