@@ -2,15 +2,21 @@ from django.db import models
 from products.models import Product
 
 class Order(models.Model):
-    full_name = models.CharField(max_length=250)
+    first_name = models.CharField(max_length=250)
+    last_name = models.CharField(max_length=250)
     email = models.EmailField()
     address = models.CharField(max_length=250)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    postal_code = models.CharField(max_length=20)
+    city = models.CharField(max_length=100)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
     paid = models.BooleanField(default=False)
 
     def get_total_cost(self):
         return sum(item.get_cost() for item in self.items.all())
+
+    def __str__(self):
+        return f'Order {self.id} - {self.first_name} {self.last_name}'
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
@@ -20,3 +26,6 @@ class OrderItem(models.Model):
     
     def get_cost(self):
         return self.price * self.quantity
+
+    def __str__(self):
+        return f'{self.quantity} x {self.product.name}'
