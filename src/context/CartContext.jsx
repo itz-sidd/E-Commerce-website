@@ -107,6 +107,9 @@ export const CartProvider = ({ children }) => {
       clearCart,
       getCartTotal,
       getCartItemsCount,
+      toast,
+      showToast,
+      hideToast,
     }}>
       {children}
     </CartContext.Provider>
